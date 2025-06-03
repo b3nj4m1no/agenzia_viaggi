@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-lg border-0 p-4 mt-4">
+      <h2 class="mb-4 text-primary fw-bold text-center">Storico Prenotazioni</h2>
+      <form class="mb-4" method="get">
+        <div class="input-group">
+          <input type="text" class="form-control" name="q" placeholder="Cerca per destinazione o data partenza..." value="{{ query }}">
+          <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Cerca</button>
+        </div>
+      </form>
+      {% if storico %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Data Prenotazione</th>
+              <th>Destinazione</th>
+              <th>Partenza</th>
+              <th>Ritorno</th>
+              <th>Persone</th>
+              <th>Totale (€)</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in storico|reverse %}
+            <tr>
+              <td>{{ p.timestamp[:10] }}</td>
+              <td>{{ p.viaggio.destinazione }}</td>
+              <td>{{ p.viaggio.data_partenza }}</td>
+              <td>{{ p.viaggio.data_ritorno }}</td>
+              <td>{{ p.viaggio.numero_persone }}</td>
+              <td>{{ p.totale }}</td>
+              <td>
+                <a href="{{ url_for('download_prenotazione_pdf', path=p.pdf_path|basename) }}" class="btn btn-sm btn-danger" title="Scarica PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                <a href="{{ url_for('download_prenotazione_json', path=p.json_path|basename) }}" class="btn btn-sm btn-secondary" title="Scarica JSON"><i class="bi bi-file-earmark-code"></i></a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-center text-muted">Nessuna prenotazione trovata.</p>
+      {% endif %}
+      <div class="text-center mt-3">
+        <a href="{{ url_for('area_riservata') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Torna all'area riservata</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

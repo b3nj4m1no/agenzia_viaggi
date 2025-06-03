@@ -1,8 +1,8 @@
-### 1. **Gestione utenti e autenticazione** 
+### 1. **Gestione utenti e autenticazione** FATTO
 - Registrazione e login per clienti e operatori.
 - Area riservata per visualizzare prenotazioni, modificare dati, ecc.
 
-### 2. **Storico prenotazioni** FATTO
+### 2. **Storico prenotazioni**
 - Visualizzazione e ricerca delle prenotazioni passate per ogni cliente.
 - Possibilità di scaricare di nuovo PDF/JSON delle prenotazioni precedenti.
 

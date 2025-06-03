@@ -1,0 +1,34 @@
+[
+  {
+    "timestamp": "2025-06-03T18:28:21.169971",
+    "cliente": {
+      "nome": "matthew",
+      "cognome": "gasparetti",
+      "email": "pwr.edoardo@gmail.com",
+      "telefono": "3496501728"
+    },
+    "viaggio": {
+      "destinazione": "Parigi",
+      "data_partenza": "2025-06-09",
+      "data_ritorno": "2025-06-25",
+      "numero_persone": "1"
+    },
+    "servizi": [
+      {
+        "nome": "Assicurazione",
+        "prezzo": 50
+      },
+      {
+        "nome": "Trasferimento Aeroporto",
+        "prezzo": 30
+      },
+      {
+        "nome": "WiFi Viaggio",
+        "prezzo": 20
+      }
+    ],
+    "totale": 450,
+    "pdf_path": "/tmp/prenotazione_1748968101.172393.pdf",
+    "json_path": "/home/benjamin/Documents/GitHub/agenzia_viaggi/storico_prenotazioni/pwr.edoardo@gmail.com_1748968101.json"
+  }
+]

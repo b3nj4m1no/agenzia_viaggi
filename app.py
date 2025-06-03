@@ -166,6 +166,27 @@ def salva_utenti(utenti):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+def salva_prenotazione_utente(email, data, pdf_path):
+    """Salva la prenotazione nello storico dell'utente (file JSON per ogni utente)."""
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    os.makedirs(storico_dir, exist_ok=True)
+    user_file = os.path.join(storico_dir, f"{email}.json")
+    if os.path.exists(user_file):
+        with open(user_file, "r") as f:
+            storico = json.load(f)
+    else:
+        storico = []
+    # Salva anche il path del PDF generato
+    data['pdf_path'] = pdf_path
+    # Salva anche il JSON della prenotazione
+    json_path = os.path.join(storico_dir, f"{email}_{int(datetime.now().timestamp())}.json")
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
+    data['json_path'] = json_path
+    storico.append(data)
+    with open(user_file, "w") as f:
+        json.dump(storico, f, indent=2)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -356,6 +377,9 @@ def conferma_prenotazione():
         pdf_path = os.path.join(TEMP_DIR, f"prenotazione_{datetime.now().timestamp()}.pdf")
         pdf.output(pdf_path)
 
+        # Salva nello storico
+        salva_prenotazione_utente(data['cliente']['email'], data, pdf_path)
+
         return send_file(
             pdf_path,
             as_attachment=True,
@@ -365,6 +389,43 @@ def conferma_prenotazione():
     except Exception as e:
         flash(f"Errore nella generazione del PDF: {e}", "danger")
         return redirect(url_for('nuova_prenotazione'))
+
+@app.route('/storico_prenotazioni')
+def storico_prenotazioni():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    email = session['user']['email']
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    user_file = os.path.join(storico_dir, f"{email}.json")
+    storico = []
+    if os.path.exists(user_file):
+        with open(user_file, "r") as f:
+            storico = json.load(f)
+    # Ricerca per destinazione o data (opzionale)
+    query = request.args.get("q", "").lower()
+    if query:
+        storico = [p for p in storico if query in p["viaggio"]["destinazione"].lower() or query in p["viaggio"]["data_partenza"]]
+    return render_template("storico_prenotazioni.html", storico=storico, query=query)
+
+@app.template_filter('basename')
+def basename_filter(path):
+    return os.path.basename(path)
+
+@app.route('/download/pdf/<path:path>')
+def download_prenotazione_pdf(path):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    pdf_path = os.path.join(storico_dir, path)
+    return send_file(pdf_path, as_attachment=True, mimetype='application/pdf')
+
+@app.route('/download/json/<path:path>')
+def download_prenotazione_json(path):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    json_path = os.path.join(storico_dir, path)
+    return send_file(json_path, as_attachment=True, mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(debug=True)
