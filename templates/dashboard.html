@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-lg border-0 p-4 mt-4">
+      <h2 class="mb-4 text-primary fw-bold text-center">Dashboard Operatore</h2>
+      <div class="row mb-4 text-center">
+        <div class="col-md-4">
+          <div class="bg-light rounded p-3">
+            <h5>Prenotazioni totali</h5>
+            <div class="display-6 fw-bold">{{ totale_prenotazioni }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="bg-light rounded p-3">
+            <h5>Incasso totale (€)</h5>
+            <div class="display-6 fw-bold">{{ incasso_totale }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="bg-light rounded p-3">
+            <h5>Destinazioni più richieste</h5>
+            <ul class="list-unstyled mb-0">
+              {% for dest, count in top_destinazioni %}
+                <li>{{ dest }} <span class="badge bg-info">{{ count }}</span></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 text-end">
+        <a href="{{ url_for('export_csv') }}" class="btn btn-success"><i class="bi bi-file-earmark-spreadsheet"></i> Esporta CSV</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Email</th>
+              <th>Destinazione</th>
+              <th>Partenza</th>
+              <th>Ritorno</th>
+              <th>Persone</th>
+              <th>Totale (€)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in prenotazioni|reverse %}
+            <tr>
+              <td>{{ p.timestamp[:10] }}</td>
+              <td>{{ p.cliente.nome }} {{ p.cliente.cognome }}</td>
+              <td>{{ p.cliente.email }}</td>
+              <td>{{ p.viaggio.destinazione }}</td>
+              <td>{{ p.viaggio.data_partenza }}</td>
+              <td>{{ p.viaggio.data_ritorno }}</td>
+              <td>{{ p.viaggio.numero_persone }}</td>
+              <td>{{ p.totale }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

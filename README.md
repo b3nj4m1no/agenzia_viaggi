@@ -6,10 +6,10 @@
 - Visualizzazione e ricerca delle prenotazioni passate per ogni cliente.
 - Possibilità di scaricare di nuovo PDF/JSON delle prenotazioni precedenti.
 
-### 3. **Gestione offerte e pacchetti** 
+### 3. **Gestione offerte e pacchetti** FATTO
 - Sezione per offerte speciali, last minute, pacchetti viaggio personalizzati.
 - Applicazione automatica di sconti o promozioni.
 
-### 4. **Gestione amministrativa** FATTO
+### 4. **Gestione amministrativa** 
 - Dashboard per operatori con statistiche (prenotazioni, incassi, destinazioni più richieste).
 - Esportazione dati in Excel/CSV.

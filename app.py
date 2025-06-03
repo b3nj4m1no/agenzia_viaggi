@@ -6,6 +6,8 @@ from fpdf import FPDF
 import tempfile
 from datetime import datetime
 import hashlib
+import csv
+from collections import Counter
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
@@ -59,8 +61,8 @@ class PDFGenerator(FPDF):
         
         self.set_font('Arial', 'I', 6)
         self.set_text_color(100, 100, 100)
-        self.cell(0, 5, "SunTravel Agency - Via del Viaggio, 103 - 00100 Roma", 0, 1, 'C')
-        self.cell(0, 5, "Tel: +39 06 1034567 - Email: info@suntravel.it - P.IVA: 10345678901", 0, 1, 'C')
+        self.cell(0, 5, "SunTravel Agency - Via Toscana 10 - 43122 Parma", 0, 1, 'C')
+        self.cell(0, 5, "Tel: +69 06 1034567 - Email: info@suntrav.el - P.IVA: 10345678901", 0, 1, 'C')
         self.cell(0, 5, f"Pagina {self.page_no()}", 0, 0, 'C')
     
     def add_section_title(self, title):
@@ -461,6 +463,77 @@ def offerte():
         with open(offerte_file, 'r') as f:
             offerte = json.load(f)
     return render_template('offerte.html', offerte=offerte)
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session or session['user']['ruolo'] != 'operatore':
+        flash("Accesso riservato agli operatori.", "danger")
+        return redirect(url_for('login'))
+
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    prenotazioni = []
+    if os.path.exists(storico_dir):
+        for filename in os.listdir(storico_dir):
+            # Prendi solo i file che rappresentano lo storico utente (es: email.json)
+            if filename.endswith('.json') and '@' in filename and '_' not in filename:
+                with open(os.path.join(storico_dir, filename)) as f:
+                    prenotazioni += json.load(f)
+
+    totale_prenotazioni = len(prenotazioni)
+    incasso_totale = sum(p.get('totale', 0) for p in prenotazioni)
+    destinazioni = [p['viaggio']['destinazione'] for p in prenotazioni if 'viaggio' in p]
+    from collections import Counter
+    destinazioni_counter = Counter(destinazioni)
+    top_destinazioni = destinazioni_counter.most_common(5)
+
+    return render_template(
+        "dashboard.html",
+        totale_prenotazioni=totale_prenotazioni,
+        incasso_totale=incasso_totale,
+        top_destinazioni=top_destinazioni,
+        prenotazioni=prenotazioni
+    )
+
+@app.route('/export_csv')
+def export_csv():
+    if 'user' not in session or session['user']['ruolo'] != 'operatore':
+        flash("Accesso riservato agli operatori.", "danger")
+        return redirect(url_for('login'))
+
+    storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
+    prenotazioni = []
+    if os.path.exists(storico_dir):
+        for filename in os.listdir(storico_dir):
+            if filename.endswith('.json') and '@' in filename and '_' not in filename:
+                with open(os.path.join(storico_dir, filename)) as f:
+                    prenotazioni += json.load(f)
+
+    # Prepara CSV in memoria
+    from io import StringIO
+    si = StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['Data', 'Cliente', 'Email', 'Destinazione', 'Partenza', 'Ritorno', 'Persone', 'Totale'])
+    for p in prenotazioni:
+        writer.writerow([
+            p.get('timestamp', ''),
+            f"{p['cliente']['nome']} {p['cliente']['cognome']}",
+            p['cliente']['email'],
+            p['viaggio']['destinazione'],
+            p['viaggio']['data_partenza'],
+            p['viaggio']['data_ritorno'],
+            p['viaggio']['numero_persone'],
+            p.get('totale', 0)
+        ])
+    output = si.getvalue()
+    si.close()
+    return (
+        output,
+        200,
+        {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': 'attachment; filename=prenotazioni.csv'
+        }
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
