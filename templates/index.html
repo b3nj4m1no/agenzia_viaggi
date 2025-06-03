@@ -1,79 +1,44 @@
-<!-- templates/index.html -->
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenzia Viaggi - Home</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-100">
-    <!-- Navbar -->
-    <nav class="bg-blue-600 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center">
-                <i class="fas fa-sun text-2xl mr-2"></i>
-                <span class="font-bold text-xl">SunTravel</span>
-            </div>
-            <div>
-                <a href="/" class="px-4 py-2 rounded hover:bg-blue-700">Home</a>
-                <a href="/nuova_prenotazione" class="px-4 py-2 rounded hover:bg-blue-700">Nuova Prenotazione</a>
-            </div>
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow p-5 mt-4 text-center">
+      <h1 class="mb-4 text-primary fw-bold">Benvenuto su SunTravel Agency</h1>
+      <p class="lead mb-4">
+        Prenota la tua prossima avventura con facilità e sicurezza.<br>
+        Accedi o registrati per gestire le tue prenotazioni!
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-5">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-5">Registrati</a>
+      </div>
+    </div>
+    <div class="mt-5">
+      <h3 class="text-center mb-3">Perché scegliere SunTravel?</h3>
+      <div class="row text-center align-items-stretch">
+        <div class="col-md-4 mb-3 d-flex">
+          <div class="p-3 bg-light rounded shadow-sm flex-fill d-flex flex-column justify-content-center">
+            <span class="fs-1 text-warning">&#9733;</span>
+            <h5 class="mt-2">Esperienza</h5>
+            <p>Oltre 20 anni nel settore viaggi.</p>
+          </div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-20">
-        <div class="container mx-auto text-center">
-            <h1 class="text-5xl font-bold mb-4">Scopri il mondo con noi</h1>
-            <p class="text-xl mb-8">Prenota la tua vacanza perfetta con un click</p>
-            <a href="/nuova_prenotazione" class="bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gray-100 transition">Prenota Ora</a>
+        <div class="col-md-4 mb-3 d-flex">
+          <div class="p-3 bg-light rounded shadow-sm flex-fill d-flex flex-column justify-content-center">
+            <span class="fs-1 text-primary">&#128640;</span>
+            <h5 class="mt-2">Destinazioni Uniche</h5>
+            <p>Viaggi in tutto il mondo, per ogni esigenza.</p>
+          </div>
         </div>
-    </header>
-
-    <!-- Features -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Perché scegliere SunTravel?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center p-6 bg-gray-50 rounded-lg shadow-sm">
-                    <i class="fas fa-shield-alt text-4xl text-blue-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Sicurezza Garantita</h3>
-                    <p class="text-gray-600">Prenotazioni protette e assistenza 24/7 durante il viaggio</p>
-                </div>
-                <div class="text-center p-6 bg-gray-50 rounded-lg shadow-sm">
-                    <i class="fas fa-percent text-4xl text-blue-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Miglior Prezzo</h3>
-                    <p class="text-gray-600">Tariffe esclusive e sconti speciali per i nostri clienti</p>
-                </div>
-                <div class="text-center p-6 bg-gray-50 rounded-lg shadow-sm">
-                    <i class="fas fa-globe text-4xl text-blue-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Destinazioni Esclusive</h3>
-                    <p class="text-gray-600">Accesso a esperienze uniche in tutto il mondo</p>
-                </div>
-            </div>
+        <div class="col-md-4 mb-3 d-flex">
+          <div class="p-3 bg-light rounded shadow-sm flex-fill d-flex flex-column justify-content-center">
+            <span class="fs-1 text-success">&#128176;</span>
+            <h5 class="mt-2">Prezzi Competitivi</h5>
+            <p>Offerte e promozioni tutto l'anno.</p>
+          </div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2023 SunTravel Agency. Tutti i diritti riservati.</p>
-            <div class="mt-4">
-                <a href="#" class="mx-2 text-blue-300 hover:text-white"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="mx-2 text-blue-300 hover:text-white"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="mx-2 text-blue-300 hover:text-white"><i class="fab fa-twitter"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Gestione notifiche
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('success')) {
-            alert('Prenotazione completata con successo!');
-        }
-    </script>
-</body>
-</html>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

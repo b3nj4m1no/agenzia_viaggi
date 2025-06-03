@@ -1,16 +1,18 @@
 # app.py
 import os
 import json
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session, flash
 from fpdf import FPDF
 import tempfile
 from datetime import datetime
+import hashlib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 
 # Cartella per i file temporanei
 TEMP_DIR = tempfile.gettempdir()
+UTENTI_FILE = os.path.join(os.path.dirname(__file__), 'utenti.json')
 
 class PDFGenerator(FPDF):
     def __init__(self, *args, **kwargs):
@@ -151,6 +153,19 @@ class PDFGenerator(FPDF):
         self.set_text_color(100, 100, 100)
         self.multi_cell(0, 6, "Grazie per aver scelto SunTravel! La presente conferma costituisce documento valido ai fini fiscali. Per qualsiasi modifica o cancellazione, contattare il nostro ufficio entro 7 giorni dalla data di partenza.")
 
+def carica_utenti():
+    if not os.path.exists(UTENTI_FILE):
+        return []
+    with open(UTENTI_FILE, 'r') as f:
+        return json.load(f)
+
+def salva_utenti(utenti):
+    with open(UTENTI_FILE, 'w') as f:
+        json.dump(utenti, f, indent=2)
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -238,6 +253,62 @@ def genera_pdf():
             "success": False,
             "message": str(e)
         }), 500
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        nome = request.form['nome']
+        cognome = request.form['cognome']
+        ruolo = request.form['ruolo']  # 'cliente' o 'operatore'
+        utenti = carica_utenti()
+        if any(u['email'] == email for u in utenti):
+            flash("Email già registrata", "danger")
+            return redirect(url_for('register'))
+        utenti.append({
+            "email": email,
+            "password": hash_password(password),
+            "nome": nome,
+            "cognome": cognome,
+            "ruolo": ruolo
+        })
+        salva_utenti(utenti)
+        flash("Registrazione completata, ora puoi accedere.", "success")
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        utenti = carica_utenti()
+        user = next((u for u in utenti if u['email'] == email and u['password'] == hash_password(password)), None)
+        if user:
+            session['user'] = {
+                "email": user['email'],
+                "nome": user['nome'],
+                "cognome": user['cognome'],
+                "ruolo": user['ruolo']
+            }
+            flash("Login effettuato", "success")
+            return redirect(url_for('area_riservata'))
+        flash("Credenziali errate", "danger")
+        return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    flash("Logout effettuato", "info")
+    return redirect(url_for('index'))
+
+@app.route('/area_riservata')
+def area_riservata():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('area_riservata.html', user=session['user'])
 
 if __name__ == '__main__':
     app.run(debug=True)

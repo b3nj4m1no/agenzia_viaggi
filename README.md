@@ -1,4 +1,4 @@
-### 1. **Gestione utenti e autenticazione** FATTO
+### 1. **Gestione utenti e autenticazione** 
 - Registrazione e login per clienti e operatori.
 - Area riservata per visualizzare prenotazioni, modificare dati, ecc.
 
