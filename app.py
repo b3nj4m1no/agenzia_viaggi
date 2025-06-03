@@ -169,17 +169,19 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def salva_prenotazione_utente(email, data, pdf_path):
+    """Salva la prenotazione nello storico dell'utente (file JSON per ogni utente)."""
     storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
     os.makedirs(storico_dir, exist_ok=True)
-    safe_email = safe_email_filename(email)
-    user_file = os.path.join(storico_dir, f"{safe_email}.json")
+    nome = data['cliente']['nome']
+    cognome = data['cliente']['cognome']
+    user_file = os.path.join(storico_dir, f"{safe_filename(nome, cognome)}.json")
     if os.path.exists(user_file):
         with open(user_file, "r") as f:
             storico = json.load(f)
     else:
         storico = []
     data['pdf_path'] = pdf_path
-    json_path = os.path.join(storico_dir, f"{safe_email}_{int(datetime.now().timestamp())}.json")
+    json_path = os.path.join(storico_dir, f"{safe_filename(nome, cognome)}_{int(datetime.now().timestamp())}.json")
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2)
     data['json_path'] = json_path
@@ -208,9 +210,6 @@ def applica_offerte(data, totale):
                 totale -= 350  # 1 quota gratis
                 sconto_applicato = offerta['titolo']
     return int(totale), sconto_applicato
-
-def safe_email_filename(email):
-    return email.replace('@', '_at_').replace('.', '_dot_')
 
 @app.route('/')
 def index():
@@ -423,15 +422,14 @@ def conferma_prenotazione():
 def storico_prenotazioni():
     if 'user' not in session:
         return redirect(url_for('login'))
-    email = session['user']['email']
-    safe_email = safe_email_filename(email)
+    nome = session['user']['nome']
+    cognome = session['user']['cognome']
     storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
-    user_file = os.path.join(storico_dir, f"{safe_email}.json")
+    user_file = os.path.join(storico_dir, f"{safe_filename(nome, cognome)}.json")
     storico = []
     if os.path.exists(user_file):
         with open(user_file, "r") as f:
             storico = json.load(f)
-    # Ricerca per destinazione o data (opzionale)
     query = request.args.get("q", "").lower()
     if query:
         storico = [p for p in storico if query in p["viaggio"]["destinazione"].lower() or query in p["viaggio"]["data_partenza"]]
@@ -477,7 +475,7 @@ def dashboard():
     if os.path.exists(storico_dir):
         for filename in os.listdir(storico_dir):
             # Prendi solo i file che rappresentano lo storico utente (es: email.json)
-            if filename.endswith('.json') and '@' in filename and '_' not in filename:
+            if filename.startswith('riepilogo_') and filename.endswith('.json') and filename.count('_') == 2:
                 with open(os.path.join(storico_dir, filename)) as f:
                     prenotazioni += json.load(f)
 
@@ -506,7 +504,7 @@ def export_csv():
     prenotazioni = []
     if os.path.exists(storico_dir):
         for filename in os.listdir(storico_dir):
-            if filename.endswith('.json') and '@' in filename and '_' not in filename:
+            if filename.startswith('riepilogo_') and filename.endswith('.json') and filename.count('_') == 2:
                 with open(os.path.join(storico_dir, filename)) as f:
                     prenotazioni += json.load(f)
 
@@ -536,6 +534,10 @@ def export_csv():
             'Content-Disposition': 'attachment; filename=prenotazioni.csv'
         }
     )
+
+def safe_filename(nome, cognome):
+    # Rimuove spazi e caratteri non validi per i file
+    return f"riepilogo_{cognome.strip().replace(' ', '_')}_{nome.strip().replace(' ', '_')}".lower()
 
 if __name__ == '__main__':
     app.run(debug=True)

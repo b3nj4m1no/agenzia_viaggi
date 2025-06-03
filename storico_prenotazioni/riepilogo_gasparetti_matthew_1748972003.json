@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-06-03T19:33:23.543859",
+  "cliente": {
+    "nome": "matthew",
+    "cognome": "gasparetti",
+    "email": "pwr.edoardo@gmail.com",
+    "telefono": "3496501728"
+  },
+  "viaggio": {
+    "destinazione": "Spagna",
+    "data_partenza": "2025-06-26",
+    "data_ritorno": "2025-07-07",
+    "numero_persone": "1"
+  },
+  "servizi": [],
+  "totale": 297,
+  "sconto_applicato": "Estate Last Minute (-15%)",
+  "pdf_path": "/tmp/prenotazione_1748972003.547469.pdf"
+}
