@@ -128,90 +128,18 @@
                 <i class="fas fa-sun text-2xl mr-2"></i>
                 <span class="font-bold text-xl">SunTravel</span>
             </div>
-            <div class="flex items-center space-x-2">
+            <div>
                 <a href="/" class="px-4 py-2 rounded hover:bg-blue-700">Home</a>
-                {% if current_user.is_authenticated %}
-                    <span class="flex items-center px-4 py-2 rounded bg-blue-700 ml-2">
-                        <i class="fas fa-user-circle text-xl mr-2"></i>
-                        {{ current_user.username }}
-                    </span>
-                {% endif %}
+                <a href="/nuova_prenotazione" class="bg-blue-800 px-4 py-2 rounded">Nuova Prenotazione</a>
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Nuova Prenotazione</h1>
-
-        <!-- RICERCA AVANZATA: CARD ORDINATA -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mb-12 max-w-4xl mx-auto">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <h2 class="text-2xl font-bold text-blue-800 mb-4 md:mb-0">
-                    <i class="fas fa-search-location mr-2"></i>Ricerca Avanzata Viaggi
-                </h2>
-                <span class="text-gray-500 text-sm">Filtra le offerte già prenotate dagli utenti</span>
-            </div>
-            <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
-                <input type="text" name="destinazione" placeholder="Destinazione" value="{{ query.destinazione or '' }}" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                <input type="number" name="prezzo_min" placeholder="Prezzo Min" value="{{ query.prezzo_min or '' }}" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                <input type="number" name="prezzo_max" placeholder="Prezzo Max" value="{{ query.prezzo_max or '' }}" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                <input type="date" name="data_da" placeholder="Dal" value="{{ query.data_da or '' }}" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                <input type="date" name="data_a" placeholder="Al" value="{{ query.data_a or '' }}" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                <select name="servizio" class="px-3 py-2 border rounded focus:ring-2 focus:ring-blue-200">
-                    <option value="">Servizio</option>
-                    <option value="assicurazione" {% if query.servizio == 'assicurazione' %}selected{% endif %}>Assicurazione</option>
-                    <option value="trasferimento" {% if query.servizio == 'trasferimento' %}selected{% endif %}>Trasferimento Aeroporto</option>
-                    <option value="wifi" {% if query.servizio == 'wifi' %}selected{% endif %}>WiFi Viaggio</option>
-                </select>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded col-span-1 md:col-span-6 hover:bg-blue-700 transition">Cerca</button>
-            </form>
-
-            <div class="mb-8">
-                <h3 class="text-lg font-semibold text-blue-700 mb-2"><i class="fas fa-map-marked-alt mr-2"></i>Mappa delle Destinazioni</h3>
-                <div id="mappa" style="height: 320px; width: 100%;" class="rounded shadow"></div>
-            </div>
-
-            <h3 class="text-lg font-semibold text-blue-700 mb-4"><i class="fas fa-list mr-2"></i>Risultati</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded shadow text-center">
-                    <thead>
-                        <tr>
-                            <th class="py-2 px-4 border-b">Destinazione</th>
-                            <th class="py-2 px-4 border-b">Partenza</th>
-                            <th class="py-2 px-4 border-b">Ritorno</th>
-                            <th class="py-2 px-4 border-b">Persone</th>
-                            <th class="py-2 px-4 border-b">Totale</th>
-                            <th class="py-2 px-4 border-b">Servizi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if risultati %}
-                            {% for v in risultati %}
-                            <tr class="hover:bg-blue-50">
-                                <td class="py-2 px-4 border-b">{{ v.viaggio.destinazione }}</td>
-                                <td class="py-2 px-4 border-b">{{ v.viaggio.data_partenza }}</td>
-                                <td class="py-2 px-4 border-b">{{ v.viaggio.data_ritorno }}</td>
-                                <td class="py-2 px-4 border-b">{{ v.viaggio.numero_persone }}</td>
-                                <td class="py-2 px-4 border-b">€ {{ v.totale }}</td>
-                                <td class="py-2 px-4 border-b">
-                                    {% for s in v.servizi %}
-                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-1">{{ s.nome }}</span>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6" class="py-4 text-gray-400">Nessun viaggio trovato con questi filtri.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <!-- FINE RICERCA AVANZATA -->
-
-        <!-- Qui inizia il form di prenotazione -->
+        
+        <div id="message" class="mb-6"></div>
+        
         <form id="prenotazioneForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <!-- Sezione Cliente -->
             <div class="mb-8 border-b pb-6">
@@ -418,32 +346,6 @@
         
         document.getElementById('data_partenza').valueAsDate = nextWeek;
         document.getElementById('data_ritorno').valueAsDate = twoWeeks;
-    </script>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        // Mappa con marker sulle destinazioni (mock: solo coordinate di esempio)
-        var destinazioni = {{ destinazioni_mappa | tojson | safe }};
-        var coords = {
-            "Maldive": [3.2028, 73.2207],
-            "Grecia": [39.0742, 21.8243],
-            "New York": [40.7128, -74.0060],
-            "Sicilia": [37.5999938, 14.0153557],
-            "Sardegna": [40.1209, 9.0129],
-            "Spagna": [40.4637, -3.7492],
-            "Malta": [35.9375, 14.3754]
-            // Aggiungi altre destinazioni qui se vuoi
-        };
-        var map = L.map('mappa').setView([38, 15], 3);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        destinazioni.forEach(function(dest) {
-            if(coords[dest]) {
-                L.marker(coords[dest]).addTo(map).bindPopup(dest);
-            }
-        });
     </script>
 </body>
 </html>
