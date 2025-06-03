@@ -310,5 +310,61 @@ def area_riservata():
         return redirect(url_for('login'))
     return render_template('area_riservata.html', user=session['user'])
 
+@app.route('/conferma_prenotazione', methods=['POST'])
+def conferma_prenotazione():
+    try:
+        data = {
+            "timestamp": datetime.now().isoformat(),
+            "cliente": {
+                "nome": request.form['nome'],
+                "cognome": request.form['cognome'],
+                "email": request.form['email'],
+                "telefono": request.form['telefono']
+            },
+            "viaggio": {
+                "destinazione": request.form['destinazione'],
+                "data_partenza": request.form['data_partenza'],
+                "data_ritorno": request.form['data_ritorno'],
+                "numero_persone": request.form['numero_persone']
+            },
+            "servizi": [],
+            "totale": 0
+        }
+
+        # Calcolo totale
+        base_price = 350 * int(data["viaggio"]["numero_persone"])
+        total = base_price
+
+        # Servizi aggiuntivi
+        servizi_mapping = {
+            "assicurazione": {"nome": "Assicurazione", "prezzo": 50},
+            "trasferimento": {"nome": "Trasferimento Aeroporto", "prezzo": 30},
+            "wifi": {"nome": "WiFi Viaggio", "prezzo": 20}
+        }
+
+        for servizio in servizi_mapping:
+            if servizio in request.form:
+                data["servizi"].append(servizi_mapping[servizio])
+                total += servizi_mapping[servizio]["prezzo"]
+
+        data["totale"] = total
+
+        # Genera PDF
+        pdf = PDFGenerator()
+        pdf.add_page()
+        pdf.add_travel_details(data)
+        pdf_path = os.path.join(TEMP_DIR, f"prenotazione_{datetime.now().timestamp()}.pdf")
+        pdf.output(pdf_path)
+
+        return send_file(
+            pdf_path,
+            as_attachment=True,
+            download_name=f"conferma_viaggio_{data['cliente']['cognome']}.pdf",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        flash(f"Errore nella generazione del PDF: {e}", "danger")
+        return redirect(url_for('nuova_prenotazione'))
+
 if __name__ == '__main__':
     app.run(debug=True)

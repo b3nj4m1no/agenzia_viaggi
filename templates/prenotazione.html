@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 90vh;">
+  <div class="col-lg-7 col-md-9">
+    <div class="card shadow-lg border-0 p-4">
+      <h2 class="fw-bold text-center mb-4 text-primary">Prenota il tuo viaggio</h2>
+      <form method="post" action="{{ url_for('conferma_prenotazione') }}">
+        <h5 class="mb-3 text-secondary">Dati Cliente</h5>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" name="nome" class="form-control" required maxlength="50" placeholder="Il tuo nome">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Cognome</label>
+            <input type="text" name="cognome" class="form-control" required maxlength="50" placeholder="Il tuo cognome">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required maxlength="120" placeholder="nome@email.com">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Telefono</label>
+            <input type="tel" name="telefono" class="form-control" required maxlength="20" placeholder="Telefono">
+          </div>
+        </div>
+        <hr class="my-4">
+        <h5 class="mb-3 text-secondary">Dati Viaggio</h5>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Destinazione</label>
+            <input type="text" name="destinazione" class="form-control" required maxlength="100" placeholder="Es: Parigi">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Data Partenza</label>
+            <input type="date" name="data_partenza" class="form-control" required>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Data Ritorno</label>
+            <input type="date" name="data_ritorno" class="form-control" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Numero Persone</label>
+          <input type="number" name="numero_persone" class="form-control" required min="1" max="20" value="1">
+        </div>
+        <hr class="my-4">
+        <h5 class="mb-3 text-secondary">Servizi Aggiuntivi</h5>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="assicurazione" id="assicurazione">
+          <label class="form-check-label" for="assicurazione">
+            Assicurazione viaggio (+50€)
+          </label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="trasferimento" id="trasferimento">
+          <label class="form-check-label" for="trasferimento">
+            Trasferimento aeroporto (+30€)
+          </label>
+        </div>
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" name="wifi" id="wifi">
+          <label class="form-check-label" for="wifi">
+            WiFi viaggio (+20€)
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Calcola e Conferma Prenotazione</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

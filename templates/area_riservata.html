@@ -1,15 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card shadow p-4">
-      <h2 class="mb-4 text-center">Area Riservata</h2>
-      <p><strong>Benvenuto, {{ user['nome'] }} {{ user['cognome'] }}!</strong></p>
-      <ul class="list-group mb-3">
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="col-md-7 col-lg-6">
+    <div class="card shadow-lg border-0 p-4">
+      <h2 class="mb-4 text-center text-primary fw-bold">Area Riservata</h2>
+      <p class="mb-3 text-center">
+        <strong>Benvenuto, {{ user['nome'] }} {{ user['cognome'] }}!</strong>
+      </p>
+      <ul class="list-group mb-4">
         <li class="list-group-item"><strong>Email:</strong> {{ user['email'] }}</li>
         <li class="list-group-item"><strong>Ruolo:</strong> {{ user['ruolo'] }}</li>
       </ul>
-      <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+      <div class="d-grid gap-2 mb-2">
+        <a href="{{ url_for('nuova_prenotazione') }}" class="btn btn-success btn-lg fw-bold">
+          <i class="bi bi-calendar-plus"></i> Nuova Prenotazione
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary">Logout</a>
+      </div>
     </div>
   </div>
 </div>
