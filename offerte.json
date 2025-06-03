@@ -1,0 +1,16 @@
+[
+  {
+    "titolo": "Estate Last Minute",
+    "descrizione": "Sconto 15% su tutte le prenotazioni per partenze entro il 31/08!",
+    "tipo": "percentuale",
+    "valore": 15,
+    "scadenza": "2025-08-31"
+  },
+  {
+    "titolo": "Pacchetto Famiglia",
+    "descrizione": "Viaggia in 4, paghi solo per 3!",
+    "tipo": "famiglia",
+    "valore": 4,
+    "scadenza": "2025-12-31"
+  }
+]

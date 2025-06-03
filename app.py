@@ -187,6 +187,28 @@ def salva_prenotazione_utente(email, data, pdf_path):
     with open(user_file, "w") as f:
         json.dump(storico, f, indent=2)
 
+def applica_offerte(data, totale):
+    offerte_file = os.path.join(os.path.dirname(__file__), 'offerte.json')
+    if not os.path.exists(offerte_file):
+        return totale, None
+    with open(offerte_file, 'r') as f:
+        offerte = json.load(f)
+    sconto_applicato = None
+    oggi = datetime.now().date()
+    for offerta in offerte:
+        scadenza = datetime.strptime(offerta['scadenza'], "%Y-%m-%d").date()
+        if oggi > scadenza:
+            continue
+        if offerta['tipo'] == 'percentuale':
+            sconto = totale * offerta['valore'] / 100
+            totale -= sconto
+            sconto_applicato = f"{offerta['titolo']} (-{offerta['valore']}%)"
+        elif offerta['tipo'] == 'famiglia':
+            if int(data['viaggio']['numero_persone']) >= offerta['valore']:
+                totale -= 350  # 1 quota gratis
+                sconto_applicato = offerta['titolo']
+    return int(totale), sconto_applicato
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -232,7 +254,9 @@ def genera_json():
                 data["servizi"].append(servizi_mapping[servizio])
                 total += servizi_mapping[servizio]["prezzo"]
         
-        data["totale"] = total
+        totale, sconto_applicato = applica_offerte(data, total)
+        data["totale"] = totale
+        data["sconto_applicato"] = sconto_applicato
         
         # Salva il JSON temporaneamente
         json_path = os.path.join(TEMP_DIR, f"prenotazione_{datetime.now().timestamp()}.json")
@@ -368,7 +392,9 @@ def conferma_prenotazione():
                 data["servizi"].append(servizi_mapping[servizio])
                 total += servizi_mapping[servizio]["prezzo"]
 
-        data["totale"] = total
+        totale, sconto_applicato = applica_offerte(data, total)
+        data["totale"] = totale
+        data["sconto_applicato"] = sconto_applicato
 
         # Genera PDF
         pdf = PDFGenerator()
@@ -426,6 +452,15 @@ def download_prenotazione_json(path):
     storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
     json_path = os.path.join(storico_dir, path)
     return send_file(json_path, as_attachment=True, mimetype='application/json')
+
+@app.route('/offerte')
+def offerte():
+    offerte_file = os.path.join(os.path.dirname(__file__), 'offerte.json')
+    offerte = []
+    if os.path.exists(offerte_file):
+        with open(offerte_file, 'r') as f:
+            offerte = json.load(f)
+    return render_template('offerte.html', offerte=offerte)
 
 if __name__ == '__main__':
     app.run(debug=True)
