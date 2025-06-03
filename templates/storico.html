@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Storico Prenotazioni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white shadow-lg mb-8">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-sun text-2xl mr-2"></i>
+                <span class="font-bold text-xl">SunTravel</span>
+            </div>
+            <div>
+                <a href="/" class="px-4 py-2 rounded hover:bg-blue-700">Home</a>
+                <a href="/nuova_prenotazione" class="px-4 py-2 rounded hover:bg-blue-700">Nuova Prenotazione</a>
+                <a href="/storico" class="px-4 py-2 rounded bg-blue-700">Storico</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-6 text-blue-800">Storico Prenotazioni</h2>
+        <form method="get" class="mb-6 flex">
+            <input type="text" name="q" value="{{ query }}" placeholder="Cerca per destinazione..." class="px-4 py-2 border rounded-l w-full">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r">Cerca</button>
+        </form>
+        {% if prenotazioni %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded shadow">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Data</th>
+                            <th class="py-2 px-4 border-b">Destinazione</th>
+                            <th class="py-2 px-4 border-b">Persone</th>
+                            <th class="py-2 px-4 border-b">Totale</th>
+                            <th class="py-2 px-4 border-b">Offerta Applicata</th>
+                            <th class="py-2 px-4 border-b">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in prenotazioni %}
+                        <tr>
+                            <td class="py-2 px-4 border-b">{{ p['viaggio']['data_partenza'] }}</td>
+                            <td class="py-2 px-4 border-b">{{ p['viaggio']['destinazione'] }}</td>
+                            <td class="py-2 px-4 border-b">{{ p['viaggio']['numero_persone'] }}</td>
+                            <td class="py-2 px-4 border-b">€ {{ p['totale'] }}</td>
+                            <td class="py-2 px-4 border-b">
+                                {% if p['offerta_applicata'] %}
+                                    <span class="text-green-700 font-bold">{{ p['offerta_applicata'] }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-2 px-4 border-b">
+                                <a href="{{ url_for('download_json', filename=p['filename']) }}" class="text-blue-600 hover:underline mr-2">Scarica JSON</a>
+                                <a href="{{ url_for('download_pdf', filename=p['filename']) }}" class="text-blue-600 hover:underline mr-2">Scarica PDF</a>
+                                <a href="{{ url_for('recensisci', destinazione=p['viaggio']['destinazione']) }}" class="text-yellow-600 hover:underline">Lascia recensione</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Nessuna prenotazione trovata.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
