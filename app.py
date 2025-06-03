@@ -13,43 +13,143 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 TEMP_DIR = tempfile.gettempdir()
 
 class PDFGenerator(FPDF):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.watermark_path = os.path.join(os.path.dirname(__file__), 'static/watermark.png')
+    
     def header(self):
-        self.set_font('Arial', 'B', 16)
-        self.cell(0, 10, 'Conferma Prenotazione Viaggio', 0, 1, 'C')
-        self.ln(10)
+        # Immagine di sfondo
+        if os.path.exists(self.watermark_path):
+            self.image(self.watermark_path, x=0, y=0, w=self.w, h=self.h, type='PNG')
+        
+        # Logo e intestazione
+        self.set_y(15)
+        self.set_font('Arial', 'B', 18)
+        self.set_text_color(13, 71, 121)  # Blu scuro
+        self.cell(0, 10, "SunTravel Agency", 0, 1, 'C')
+        
+        self.set_font('Arial', '', 12)
+        self.set_text_color(251, 191, 36)  # Giallo oro
+        self.cell(0, 10, "Conferma Prenotazione", 0, 1, 'C')
+        
+        # Data corrente
+        self.set_font('Arial', '', 10)
+        self.set_text_color(100, 100, 100)
+        self.cell(0, 10, f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}", 0, 1, 'R')
+        
+        # Linea decorativa
+        self.set_draw_color(251, 191, 36)  # Giallo oro
+        self.set_line_width(0.5)
+        self.line(10, 45, self.w - 10, 45)
+        self.ln(15)
     
     def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Pagina {self.page_no()}', 0, 0, 'C')
+        # Calcola la posizione Y per la linea di separazione
+        separator_y = self.get_y() + 5
+        
+        # Disegna la linea di separazione
+        self.set_draw_color(180, 180, 180)  # Grigio chiaro
+        self.set_line_width(0.5)
+        self.line(10, separator_y, self.w - 10, separator_y)
+        
+        # Spazio dopo la linea
+        self.set_y(separator_y + 10)
+        
+        self.set_font('Arial', 'I', 6)
+        self.set_text_color(100, 100, 100)
+        self.cell(0, 5, "SunTravel Agency - Via del Viaggio, 103 - 00100 Roma", 0, 1, 'C')
+        self.cell(0, 5, "Tel: +39 06 1034567 - Email: info@suntravel.it - P.IVA: 10345678901", 0, 1, 'C')
+        self.cell(0, 5, f"Pagina {self.page_no()}", 0, 0, 'C')
+    
+    def add_section_title(self, title):
+        self.set_font('Arial', 'B', 12)
+        self.set_fill_color(224, 242, 254)  # Azzurro chiaro
+        self.set_text_color(13, 71, 121)    # Blu scuro
+        self.cell(0, 10, title, 0, 1, 'L', 1)
+        self.ln(5)
     
     def add_travel_details(self, data):
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Dettagli Cliente', 0, 1)
-        self.set_font('Arial', '', 12)
-        self.cell(0, 10, f'Nome: {data["cliente"]["nome"]} {data["cliente"]["cognome"]}', 0, 1)
-        self.cell(0, 10, f'Email: {data["cliente"]["email"]}', 0, 1)
-        self.cell(0, 10, f'Telefono: {data["cliente"]["telefono"]}', 0, 1)
-        self.ln(5)
+        # Dettagli Cliente
+        self.add_section_title("Dettagli Cliente")
+        self.set_font('Arial', '', 10)
+        self.set_text_color(0, 0, 0)
         
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Dettagli Viaggio', 0, 1)
-        self.set_font('Arial', '', 12)
-        self.cell(0, 10, f'Destinazione: {data["viaggio"]["destinazione"]}', 0, 1)
-        self.cell(0, 10, f'Data Partenza: {data["viaggio"]["data_partenza"]}', 0, 1)
-        self.cell(0, 10, f'Data Ritorno: {data["viaggio"]["data_ritorno"]}', 0, 1)
-        self.cell(0, 10, f'Numero Persone: {data["viaggio"]["numero_persone"]}', 0, 1)
-        self.ln(5)
+        self.cell(40, 8, "Nome e Cognome:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, f"{data['cliente']['nome']} {data['cliente']['cognome']}", 0, 1)
         
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Servizi Aggiuntivi', 0, 1)
-        self.set_font('Arial', '', 12)
-        for servizio in data["servizi"]:
-            self.cell(0, 10, f'- {servizio["nome"]}: EUR {servizio["prezzo"]}', 0, 1)
+        self.set_font('Arial', '', 10)
+        self.cell(40, 8, "Email:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['cliente']['email'], 0, 1)
+        
+        self.set_font('Arial', '', 10)
+        self.cell(40, 8, "Telefono:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['cliente']['telefono'], 0, 1)
         self.ln(10)
         
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 10, f'Totale: EUR {data["totale"]}', 0, 1, 'R')
+        # Dettagli Viaggio
+        self.add_section_title("Dettagli Viaggio")
+        self.set_font('Arial', '', 10)
+        self.set_text_color(0, 0, 0)
+        
+        self.cell(50, 8, "Destinazione:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['viaggio']['destinazione'], 0, 1)
+        
+        self.set_font('Arial', '', 10)
+        self.cell(50, 8, "Data Partenza:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['viaggio']['data_partenza'], 0, 1)
+        
+        self.set_font('Arial', '', 10)
+        self.cell(50, 8, "Data Ritorno:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['viaggio']['data_ritorno'], 0, 1)
+        
+        self.set_font('Arial', '', 10)
+        self.cell(50, 8, "Numero Persone:", 0, 0)
+        self.set_font('Arial', 'B', 10)
+        self.cell(0, 8, data['viaggio']['numero_persone'], 0, 1)
+        self.ln(15)
+        
+        # Servizi Aggiuntivi
+        if data['servizi']:
+            self.add_section_title("Servizi Aggiuntivi")
+            self.set_font('Arial', 'B', 10)
+            self.cell(100, 10, "Servizio", 0, 0)
+            self.cell(0, 10, "Prezzo", 0, 1)
+            self.set_draw_color(180, 180, 180)
+            self.set_line_width(0.2)
+            self.line(10, self.get_y(), self.w - 10, self.get_y())
+            self.ln(2)
+            
+            for idx, servizio in enumerate(data['servizi']):
+                self.set_font('Arial', '', 10)
+                self.cell(100, 8, servizio['nome'], 0, 0)
+                self.cell(0, 8, f"EUR {servizio['prezzo']}", 0, 1)
+                
+                if idx < len(data['servizi']) - 1:
+                    self.set_draw_color(230, 230, 230)
+                    self.set_line_width(0.1)
+                    self.line(10, self.get_y(), self.w - 10, self.get_y())
+                    self.ln(2)
+            
+            self.ln(5)
+        
+        # Totale
+        self.set_font('Arial', 'B', 12)
+        self.set_text_color(255, 255, 255)
+        self.set_fill_color(13, 71, 121)  # Blu scuro
+        self.cell(100, 15, "TOTALE", 0, 0, 'R', 1)
+        self.cell(0, 15, f"EUR {data['totale']}", 0, 1, 'R', 1)
+        self.ln(18)
+        
+        
+        self.set_font('Arial', 'I', 10)
+        self.set_text_color(100, 100, 100)
+        self.multi_cell(0, 6, "Grazie per aver scelto SunTravel! La presente conferma costituisce documento valido ai fini fiscali. Per qualsiasi modifica o cancellazione, contattare il nostro ufficio entro 7 giorni dalla data di partenza.")
 
 @app.route('/')
 def index():
