@@ -169,19 +169,17 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def salva_prenotazione_utente(email, data, pdf_path):
-    """Salva la prenotazione nello storico dell'utente (file JSON per ogni utente)."""
     storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
     os.makedirs(storico_dir, exist_ok=True)
-    user_file = os.path.join(storico_dir, f"{email}.json")
+    safe_email = safe_email_filename(email)
+    user_file = os.path.join(storico_dir, f"{safe_email}.json")
     if os.path.exists(user_file):
         with open(user_file, "r") as f:
             storico = json.load(f)
     else:
         storico = []
-    # Salva anche il path del PDF generato
     data['pdf_path'] = pdf_path
-    # Salva anche il JSON della prenotazione
-    json_path = os.path.join(storico_dir, f"{email}_{int(datetime.now().timestamp())}.json")
+    json_path = os.path.join(storico_dir, f"{safe_email}_{int(datetime.now().timestamp())}.json")
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2)
     data['json_path'] = json_path
@@ -210,6 +208,9 @@ def applica_offerte(data, totale):
                 totale -= 350  # 1 quota gratis
                 sconto_applicato = offerta['titolo']
     return int(totale), sconto_applicato
+
+def safe_email_filename(email):
+    return email.replace('@', '_at_').replace('.', '_dot_')
 
 @app.route('/')
 def index():
@@ -423,8 +424,9 @@ def storico_prenotazioni():
     if 'user' not in session:
         return redirect(url_for('login'))
     email = session['user']['email']
+    safe_email = safe_email_filename(email)
     storico_dir = os.path.join(os.path.dirname(__file__), "storico_prenotazioni")
-    user_file = os.path.join(storico_dir, f"{email}.json")
+    user_file = os.path.join(storico_dir, f"{safe_email}.json")
     storico = []
     if os.path.exists(user_file):
         with open(user_file, "r") as f:
